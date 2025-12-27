@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Universe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #006064; /* Cyan Dark */
+            --secondary: #00838f;
+            --light: #e0f7fa;
+            --white: #ffffff;
+            --text: #263238;
+            --p1: #e8f5e9; /* Paper 1 BG */
+            --p2: #ffebee; /* Paper 2 BG */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background-color: #f5f5f5; color: var(--text); padding-bottom: 80px; }
+
+        /* Header */
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 20px 15px 40px 15px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        h1 { text-align: center; font-weight: 700; margin-bottom: 5px; }
+        header span{
+            font-family: Segoe UI Symbol ;
+        }
+        p.subtitle { text-align: center; opacity: 0.9; font-size: 0.9rem; margin-bottom: 15px; }
+
+        /* Search */
+        .search-wrapper { position: relative; max-width: 700px; margin: 0 auto; }
+        #searchBox {
+            width: 100%; padding: 14px 50px 14px 20px;
+            border-radius: 50px; border: none; font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); outline: none;
+        }
+        .search-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--primary); }
+
+        /* Filters */
+        .controls {
+            max-width: 800px; margin: -20px auto 20px auto; padding: 0 10px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .btn-group {
+            display: flex; gap: 8px; overflow-x: auto; padding: 5px;
+            scrollbar-width: none; justify-content: center;
+        }
+        .btn-group::-webkit-scrollbar { display: none; }
+        
+        .filter-btn {
+            padding: 8px 16px; border: none; border-radius: 20px;
+            background: var(--white); color: var(--text); font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; white-space: nowrap; transition: 0.3s;
+        }
+        .filter-btn.active { background: var(--secondary); color: var(--white); }
+
+        /* Content List */
+        .container { max-width: 850px; margin: 0 auto; padding: 0 15px; }
+
+        .unit-card {
+            background: var(--white); border-radius: 12px; margin-bottom: 12px;
+            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .unit-header {
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .unit-header:hover { background-color: #fafafa; }
+        .unit-header.active { background-color: var(--light); border-bottom: 1px solid #b2ebf2; }
+        
+        /* Badges */
+        .badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 8px; }
+        .b-p1 { background: var(--p1); color: #2e7d32; border: 1px solid #c8e6c9; }
+        .b-p2 { background: var(--p2); color: #c62828; border: 1px solid #ffcdd2; }
+
+        /* Formulas */
+        .formula-list { display: none; padding: 10px; background: #fafafa; }
+        .formula-row {
+            display: flex; flex-direction: column; padding: 10px; 
+            border-bottom: 1px solid #eee; position: relative;
+        }
+        .formula-row:last-child { border-bottom: none; }
+        
+        .f-title { font-size: 0.9rem; color: #546e7a; font-weight: 600; margin-bottom: 5px; }
+        .f-math {
+            font-family: 'Times New Roman', serif; font-size: 1.2rem; 
+            background: #fff; padding: 8px; border-radius: 6px; 
+            border-left: 4px solid var(--secondary); display: inline-block;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Scroll Top */
+        #scrollTop {
+            position: fixed; bottom: 20px; right: 20px; background: var(--primary);
+            color: white; width: 45px; height: 45px; border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;
+        }
+        .footer {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #878686;
+            border-top: 2px solid rgba(0,0,0,0.05);
+            padding-top: 30px;
+        }
+        .footer-social a { margin: 0 10px;color: #041f25; font-size: 1.5rem; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span>📚</span> Formula Universe</h1>
+        <p class="subtitle">HSC বিজ্ঞান বিভাগের সকল সূত্র এক অ্যাপে</p>
+        <div class="search-wrapper">
+            <input type="text" id="searchBox" placeholder="অধ্যায় বা সূত্রের নাম লিখুন..." onkeyup="filterData()">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+    </header>
+
+    <div class="controls">
+        <!-- Subject Filters -->
+        <div class="btn-group" id="subFilters">
+            <button class="filter-btn active" onclick="setSub('all', this)">সব বিষয়</button>
+            <button class="filter-btn" onclick="setSub('physics', this)">পদার্থবিজ্ঞান</button>
+            <button class="filter-btn" onclick="setSub('chemistry', this)">রসায়ন</button>
+            <button class="filter-btn" onclick="setSub('math', this)">উচ্চতর গণিত</button>
+        </div>
+        <!-- Paper Filters -->
+        <div class="btn-group" id="paperFilters">
+            <button class="filter-btn active" onclick="setPaper('all', this)">উভয় পত্র</button>
+            <button class="filter-btn" onclick="setPaper('1st', this)">১ম পত্র</button>
+            <button class="filter-btn" onclick="setPaper('2nd', this)">২য় পত্র</button>
+        </div>
+    </div>
+
+    <div class="container" id="appContent">
+        <!-- Data will load here -->
+    </div>
+
+    <div id="scrollTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+        // ===============================================
+        //           THE MASTER DATABASE (HSC)
+        // ===============================================
+        const database = [
+            // ================= PHYSICS 1st PAPER =================
+            {
+                sub: 'physics', paper: '1st', unit: '২. ভেক্টর (Vectors)',
+                data: [
+                    { t: 'লব্ধির মান', m: 'R = √(P² + Q² + 2PQ cosα)' },
+                    { t: 'লব্ধির দিক', m: 'tanθ = (Q sinα) / (P + Q cosα)' },
+                    { t: 'ডট গুণন', m: 'A⋅B = AB cosθ = AxBx + AyBy + AzBz' },
+                    { t: 'ক্রস গুণন', m: '|A×B| = AB sinθ' },
+                    { t: 'নদী পারাপার (ন্যূনতম দূরত্ব)', m: 't = d / (v sinα), যেখানে cosα = -u/v' },
+                    { t: 'নদী পারাপার (ন্যূনতম সময়)', m: 't = d / v' },
+                    { t: 'বৃষ্টির আপেক্ষিক বেগ', m: 'tanθ = V_man / V_rain' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৩. গতিবিদ্যা (Dynamics)',
+                data: [
+                    { t: 'সরণ (সমত্বরণ)', m: 's = ut + ½at²' },
+                    { t: 'বেগ (সমত্বরণ)', m: 'v² = u² + 2as' },
+                    { t: 'প্রাস (সর্বাধিক উচ্চতা)', m: 'H = (v₀² sin²θ) / 2g' },
+                    { t: 'প্রাস (পাল্লা)', m: 'R = (v₀² sin2θ) / g' },
+                    { t: 'বিচরণ কাল', m: 'T = (2v₀ sinθ) / g' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৪. নিউটনীয় বলবিদ্যা',
+                data: [
+                    { t: 'বল', m: 'F = ma = dp/dt' },
+                    { t: 'ঘাত বল', m: 'J = F∆t = mv - mu' },
+                    { t: 'কৌণিক ভরবেগ', m: 'L = r × p = Iω' },
+                    { t: 'টর্ক', m: 'τ = r × F = Iα' },
+                    { t: 'জড়তার ভ্রামক (দন্ডের মধ্যবিন্দু)', m: 'I = (ML²) / 12' },
+                    { t: 'জড়তার ভ্রামক (গোলক)', m: 'I = (2/5)MR²' },
+                    { t: 'রাস্তার ব্যাংকিং', m: 'tanθ = v² / rg' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৫. কাজ, শক্তি ও ক্ষমতা',
+                data: [
+                    { t: 'কাজ (পরিবর্তনশীল বল)', m: 'W = ∫ F dx' },
+                    { t: 'স্প্রিং দ্বারা কাজ', m: 'W = ½k(x₂² - x₁²)' },
+                    { t: 'কাজ-শক্তি উপপাদ্য', m: 'W = ∆Ek' },
+                    { t: 'যান্ত্রিক দক্ষতা', m: 'η = (P_out / P_in) × 100%' },
+                    { t: 'কুয়া থেকে পানি তোলা', m: 'W = mgh + ½mv² (যদি বেগ থাকে)' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৬. মহাকর্ষ ও অভিকর্ষ',
+                data: [
+                    { t: 'অভিকর্ষজ ত্বরণ', m: 'g = GM / R²' },
+                    { t: 'h উচ্চতায় g', m: 'g\' = g(1 - 2h/R)' },
+                    { t: 'গভীরতায় g', m: 'g\' = g(1 - d/R)' },
+                    { t: 'মুক্তিবেগ', m: 've = √(2gR)' },
+                    { t: 'কপলারের ৩য় সূত্র', m: 'T² ∝ r³' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৭. পদার্থের গাঠনিক ধর্ম',
+                data: [
+                    { t: 'ইয়ং গুণাঙ্ক', m: 'Y = (FL) / (Al)' },
+                    { t: 'আয়তন গুণাঙ্ক', m: 'B = -P / (∆V/V)' },
+                    { t: 'পয়সনের অনুপাত', m: 'σ = (পার্শ্ব বিকৃতি / দৈর্ঘ্য বিকৃতি)' },
+                    { t: 'স্টোকসের সূত্র', m: 'F = 6πηrv' },
+                    { t: 'পৃষ্ঠটান', m: 'T = F / L' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '৮. পর্যায়বৃত্ত গতি',
+                data: [
+                    { t: 'অন্তরক সমীকরণ', m: 'd²x/dt² + ω²x = 0' },
+                    { t: 'কৌণিক কম্পাঙ্ক', m: 'ω = √(k/m)' },
+                    { t: 'বেগ', m: 'v = ω√(A² - x²)' },
+                    { t: 'সরল দোলক', m: 'T = 2π √(L/g)' },
+                    { t: 'স্প্রিং দোলক', m: 'T = 2π √(m/k)' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '1st', unit: '১০. আদর্শ গ্যাস ও গতিতত্ত্ব',
+                data: [
+                    { t: 'বয়েল ও চার্লস', m: '(P₁V₁)/T₁ = (P₂V₂)/T₂' },
+                    { t: 'আদর্শ গ্যাস', m: 'PV = nRT' },
+                    { t: 'গড় বর্গবেগ (RMS)', m: 'Crms = √(3RT/M)' },
+                    { t: 'গড় মুক্ত পথ', m: 'λ = 1 / (√2 π d² n)' },
+                    { t: 'স্বাধীনতার মাত্রা (E)', m: 'E = (f/2) kT' }
+                ]
+            },
+
+            // ================= PHYSICS 2nd PAPER =================
+            {
+                sub: 'physics', paper: '2nd', unit: '১. তাপগতিবিদ্যা',
+                data: [
+                    { t: '১ম সূত্র', m: 'dQ = dU + dW' },
+                    { t: 'সমোষ্ণ কাজ', m: 'W = nRT ln(V₂/V₁)' },
+                    { t: 'রুদ্ধতাপীয় সূত্র', m: 'PV^γ = constant, TV^(γ-1) = constant' },
+                    { t: 'কার্নো দক্ষতা', m: 'η = 1 - (T₂/T₁)' },
+                    { t: 'এনট্রপি', m: 'dS = dQ / T' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '২. স্থির তড়িৎ',
+                data: [
+                    { t: 'কুলম্ব বল', m: 'F = (1/4πε₀) (q₁q₂)/r²' },
+                    { t: 'প্রাবল্য', m: 'E = F/q' },
+                    { t: 'তড়িৎ দ্বিমেরু', m: 'τ = pE sinθ' },
+                    { t: 'ধারকত্ব', m: 'C = ε₀A / d' },
+                    { t: 'সঞ্চিত শক্তি', m: 'U = ½CV² = ½QV' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৩. চল তড়িৎ',
+                data: [
+                    { t: 'আপেক্ষিক রোধ', m: 'R = ρL/A' },
+                    { t: 'রোধের উষ্ণতা গুণাঙ্ক', m: 'Rθ = R₀(1 + αθ)' },
+                    { t: 'হুইটস্টোন ব্রিজ', m: 'P/Q = R/S' },
+                    { t: 'শান্ট', m: 'S = (Ig / (I - Ig)) G' },
+                    { t: 'ক্ষমতা', m: 'P = I²R = V²/R' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৪. চৌম্বক ক্রিয়া',
+                data: [
+                    { t: 'বায়ো-স্যাভার্ট', m: 'dB = (μ₀ I dl sinθ) / 4πr²' },
+                    { t: 'লম্বা তারের জন্য B', m: 'B = μ₀I / 2πr' },
+                    { t: 'লরেন্জ বল', m: 'F = q(v × B)' },
+                    { t: 'হল ভোল্টেজ', m: 'Vh = (BI) / (nte)' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৫. তাড়িতচৌম্বক আবেশ',
+                data: [
+                    { t: 'ফ্যারাডের সূত্র', m: 'e = - N (dφ/dt)' },
+                    { t: 'স্বকীয় আবেশ', m: 'e = - L (dI/dt)' },
+                    { t: 'ট্রান্সফরমার', m: 'Ep/Es = Np/Ns = Is/Ip' },
+                    { t: 'শীর্ষ ও গড় মান', m: 'Irms = I₀ / √2' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৭. ভৌত আলোকবিজ্ঞান',
+                data: [
+                    { t: 'ইয়ং এর দি-চির', m: 'x = (nλD) / a' },
+                    { t: 'ডোরা প্রস্থ', m: 'β = (λD) / 2a' },
+                    { t: 'গ্রেটিং সমীকরণ', m: 'd sinθ = nλ' },
+                    { t: 'ব্রুস্টার সূত্র', m: 'μ = tan(θp)' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৮. আধুনিক পদার্থবিজ্ঞান',
+                data: [
+                    { t: 'দৈর্ঘ্য সংকোচন', m: 'L = L₀ √(1 - v²/c²)' },
+                    { t: 'কাল দীর্ঘায়ন', m: 't = t₀ / √(1 - v²/c²)' },
+                    { t: 'ভর বৃদ্ধি', m: 'm = m₀ / √(1 - v²/c²)' },
+                    { t: 'ফোটনের শক্তি', m: 'E = hf = hc/λ' },
+                    { t: 'ডি-ব্রগলি তরঙ্গ', m: 'λ = h / mv' }
+                ]
+            },
+            {
+                sub: 'physics', paper: '2nd', unit: '৯. পরমাণুর মডেল',
+                data: [
+                    { t: 'কক্ষপথের ব্যাসার্ধ', m: 'rn = (n²h²ε₀) / (πme²)' },
+                    { t: 'শক্তির রাশিমালা', m: 'En = -13.6 / n² eV' },
+                    { t: 'ক্ষয় সূত্র', m: 'N = N₀ e^(-λt)' },
+                    { t: 'অর্ধায়ু', m: 'T½ = 0.693 / λ' }
+                ]
+            },
+
+            // ================= MATH 1st PAPER =================
+            {
+                sub: 'math', paper: '1st', unit: '১. ম্যাট্রিক্স ও নির্ণায়ক',
+                data: [
+                    { t: 'বিপরীত ম্যাট্রিক্স', m: 'A⁻¹ = (1/|A|) adj(A)' },
+                    { t: 'ক্রেমারের নিয়ম', m: 'x = Dx/D, y = Dy/D' },
+                    { t: 'singular', m: '|A| = 0' }
+                ]
+            },
+            {
+                sub: 'math', paper: '1st', unit: '৩. সরলরেখা',
+                data: [
+                    { t: 'বিভক্তি সূত্র', m: '((m₁x₂+m₂x₁)/(m₁+m₂), (m₁y₂+m₂y₁)/(m₁+m₂))' },
+                    { t: 'ঢাল', m: 'm = tanθ' },
+                    { t: 'দুই রেখার কোণ', m: 'tanθ = ±(m₁-m₂)/(1+m₁m₂)' },
+                    { t: 'দূরত্ব', m: 'd = |ax₁+by₁+c| / √(a²+b²)' }
+                ]
+            },
+            {
+                sub: 'math', paper: '1st', unit: '৪. বৃত্ত',
+                data: [
+                    { t: 'আদর্শ সমীকরণ', m: 'x² + y² + 2gx + 2fy + c = 0' },
+                    { t: 'কেন্দ্র ও ব্যাসার্ধ', m: 'C(-g, -f), r = √(g²+f²-c)' },
+                    { t: 'স্পর্শক হওয়ার শর্ত', m: 'কেন্দ্র থেকে দূরত্ব = ব্যাসার্ধ' }
+                ]
+            },
+            {
+                sub: 'math', paper: '1st', unit: '৭. ত্রিকোণমিতি',
+                data: [
+                    { t: 'sin(A+B)', m: 'sinAcosB + cosAsinB' },
+                    { t: 'cos(A+B)', m: 'cosAcosB - sinAsinB' },
+                    { t: 'tan2A', m: '2tanA / (1-tan²A)' },
+                    { t: 'cos3A', m: '4cos³A - 3cosA' },
+                    { t: 'ত্রিভুজের সাইন সূত্র', m: 'a/sinA = b/sinB = c/sinC = 2R' }
+                ]
+            },
+            {
+                sub: 'math', paper: '1st', unit: '৯. অন্তরীকরণ',
+                data: [
+                    { t: 'lim(x→a)', m: '(xⁿ - aⁿ)/(x-a) = naⁿ⁻¹' },
+                    { t: 'd/dx (u/v)', m: '(v du/dx - u dv/dx) / v²' },
+                    { t: 'd/dx (ln x)', m: '1/x' },
+                    { t: 'চরম মান', m: 'dy/dx = 0 এবং d²y/dx² < 0 (max)' }
+                ]
+            },
+            {
+                sub: 'math', paper: '1st', unit: '১০. যোগজীকরণ',
+                data: [
+                    { t: '∫ xⁿ dx', m: 'xⁿ⁺¹ / (n+1)' },
+                    { t: '∫ eᵃˣ dx', m: 'eᵃˣ / a' },
+                    { t: '∫ ln x dx', m: 'x ln x - x' },
+                    { t: '∫ √(a²-x²) dx', m: '½[x√(a²-x²) + a²sin⁻¹(x/a)]' }
+                ]
+            },
+
+            // ================= MATH 2nd PAPER =================
+            {
+                sub: 'math', paper: '2nd', unit: '৩. জটিল সংখ্যা',
+                data: [
+                    { t: 'মডুলাস', m: '|z| = √(x² + y²)' },
+                    { t: 'আর্গুমেন্ট', m: 'θ = tan⁻¹(y/x)' },
+                    { t: 'পোলার আকার', m: 'z = r(cosθ + i sinθ)' },
+                    { t: 'এককের ঘনমূল', m: '1 + ω + ω² = 0' }
+                ]
+            },
+            {
+                sub: 'math', paper: '2nd', unit: '৪. বহুপদী',
+                data: [
+                    { t: 'মূলদ্বয়ের যোগফল', m: 'α + β = -b/a' },
+                    { t: 'মূলদ্বয়ের গুণফল', m: 'αβ = c/a' },
+                    { t: 'নিশ্চায়ক', m: 'D = b² - 4ac' }
+                ]
+            },
+            {
+                sub: 'math', paper: '2nd', unit: '৬. কণিক',
+                data: [
+                    { t: 'পরাবৃত্ত (y²=4ax)', m: 'ফোকাস (a,0), নিয়ামক x = -a' },
+                    { t: 'উপবৃত্ত', m: 'x²/a² + y²/b² = 1' },
+                    { t: 'উৎকেন্দ্রিকতা (উপবৃত্ত)', m: 'e = √(1 - b²/a²) [a>b]' },
+                    { t: 'অধিবৃত্ত', m: 'x²/a² - y²/b² = 1' }
+                ]
+            },
+            {
+                sub: 'math', paper: '2nd', unit: '৭. বিপরীত ত্রিকোণমিতি',
+                data: [
+                    { t: 'tan⁻¹x + tan⁻¹y', m: 'tan⁻¹((x+y)/(1-xy))' },
+                    { t: 'sin⁻¹x + cos⁻¹x', m: 'π/2' },
+                    { t: 'সাধারণ সমাধান (sin)', m: 'θ = nπ + (-1)ⁿ α' }
+                ]
+            },
+
+             // ================= CHEMISTRY 1st PAPER =================
+             {
+                sub: 'chemistry', paper: '1st', unit: '২. গুণগত রসায়ন',
+                data: [
+                    { t: 'কৌণিক ভরবেগ', m: 'L = n(h/2π)' },
+                    { t: 'রিডবার্গ সমীকরণ', m: '1/λ = R_H (1/n₁² - 1/n₂²)' },
+                    { t: 'দ্রাব্যতা গুণফল (AB₂)', m: 'Ksp = 4s³' }
+                ]
+            },
+            {
+                sub: 'chemistry', paper: '1st', unit: '৪. রাসায়নিক পরিবর্তন',
+                data: [
+                    { t: 'Kp ও Kc', m: 'Kp = Kc (RT)^∆n' },
+                    { t: 'pH', m: 'pH = -log[H+]' },
+                    { t: 'হ্যান্ডারসন সমীকরণ', m: 'pH = pKa + log([Salt]/[Acid])' },
+                    { t: 'Ostwald লঘুকরণ', m: 'α = √(Ka/C)' },
+                    { t: 'তাপের পরিবর্তন', m: '∆H = ΣH(product) - ΣH(reactant)' }
+                ]
+            },
+
+            // ================= CHEMISTRY 2nd PAPER =================
+            {
+                sub: 'chemistry', paper: '2nd', unit: '১. পরিবেশ রসায়ন',
+                data: [
+                    { t: 'ডাল্টনের সূত্র', m: 'P = P₁ + P₂ + ...' },
+                    { t: ' গ্রাহামের ব্যাপন', m: 'r₁/r₂ = √(M₂/M₁)' },
+                    { t: 'RMS বেগ', m: 'C = √(3RT/M)' },
+                    { t: 'আংশিক চাপ', m: 'Pi = Xi × P_total' }
+                ]
+            },
+            {
+                sub: 'chemistry', paper: '2nd', unit: '২. জৈব রসায়ন (General)',
+                data: [
+                    { t: 'অ্যালকেন', m: 'CₙH₂ₙ₊₂' },
+                    { t: 'অ্যালকিন', m: 'CₙH₂ₙ' },
+                    { t: 'অ্যালকাইন', m: 'CₙH₂ₙ₋₂' },
+                    { t: 'অ্যালকোহল', m: 'CₙH₂ₙ₊₁OH' },
+                    { t: 'এসিড', m: 'CₙH₂ₙ₊₁COOH' },
+                    { t: 'বেনজিন', m: 'C₆H₆' }
+                ]
+            },
+            {
+                sub: 'chemistry', paper: '2nd', unit: '৩. পরিমাণগত রসায়ন',
+                data: [
+                    { t: 'মোলারিটি', m: 'S = (1000 × w) / (M × V_ml)' },
+                    { t: 'টাইট্রেশন', m: 'V₁S₁ = V₂S₂' },
+                    { t: 'ppm', m: 'ppm = (mass solute / mass solution) × 10⁶' }
+                ]
+            },
+            {
+                sub: 'chemistry', paper: '2nd', unit: '৪. তড়িৎ রসায়ন',
+                data: [
+                    { t: 'ফ্যারাডে (১ম)', m: 'W = ZIt' },
+                    { t: 'কোষ বিভব', m: 'Ecell = Eox + Ered' },
+                    { t: 'নার্নস্ট সমীকরণ', m: 'E = E⁰ - (RT/nF) ln Q' },
+                    { t: 'গিভস শক্তি', m: '∆G = -nFE' }
+                ]
+            }
+        ];
+
+        // ===============================================
+        //           APPLICATION LOGIC
+        // ===============================================
+
+        let subFilter = 'all';
+        let paperFilter = 'all';
+
+        // Load data on start
+        window.onload = render;
+
+        function setSub(s, btn) {
+            subFilter = s;
+            updateBtns('subFilters', btn);
+            render();
+        }
+
+        function setPaper(p, btn) {
+            paperFilter = p;
+            updateBtns('paperFilters', btn);
+            render();
+        }
+
+        function updateBtns(groupId, target) {
+            const btns = document.getElementById(groupId).getElementsByTagName('button');
+            for(let b of btns) b.classList.remove('active');
+            target.classList.add('active');
+        }
+
+        function render() {
+            const container = document.getElementById('appContent');
+            const searchVal = document.getElementById('searchBox').value.toLowerCase();
+            container.innerHTML = '';
+
+            const filtered = database.filter(item => {
+                const sMatch = subFilter === 'all' || item.sub === subFilter;
+                const pMatch = paperFilter === 'all' || item.paper === paperFilter;
+                
+                // Search Logic
+                const searchMatch = !searchVal || 
+                                    item.unit.toLowerCase().includes(searchVal) || 
+                                    item.data.some(d => d.t.toLowerCase().includes(searchVal));
+
+                return sMatch && pMatch && searchMatch;
+            });
+
+            if(filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">কোনো তথ্য পাওয়া যায়নি 🕵️</div>';
+                return;
+            }
+
+            filtered.forEach(item => {
+                const subNames = { physics:'পদার্থ', chemistry:'রসায়ন', math:'গণিত' };
+                const badgeClass = item.paper === '1st' ? 'b-p1' : 'b-p2';
+                
+                // Create HTML
+                let rows = '';
+                item.data.forEach(f => {
+                    rows += `
+                        <div class="formula-row">
+                            <span class="f-title">${f.t}</span>
+                            <span class="f-math">${f.m}</span>
+                        </div>
+                    `;
+                });
+
+                const html = `
+                    <div class="unit-card">
+                        <div class="unit-header" onclick="toggle(this)">
+                            <div>
+                                <strong>${item.unit}</strong>
+                                <br>
+                                <span style="font-size:0.8rem; color:#666;">
+                                    ${subNames[item.sub]} 
+                                    <span class="badge ${badgeClass}">${item.paper === '1st' ? '১ম' : '২য়'} পত্র</span>
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="formula-list">
+                            ${rows}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+            
+            // Auto-expand if searching
+            if(searchVal) {
+                document.querySelectorAll('.formula-list').forEach(d => d.style.display = 'block');
+            }
+        }
+
+        function filterData() {
+            render();
+        }
+
+        function toggle(header) {
+            header.classList.toggle('active');
+            const content = header.nextElementSibling;
+            if(content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        }
+
+        // Show scroll top button
+        window.onscroll = function() {
+            const btn = document.getElementById('scrollTop');
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                btn.style.display = "flex";
+            } else {
+                btn.style.display = "none";
+            }
+        };
+    </script>
+    <div class="footer">
+        <div class="footer-social">
+            <a href="https://facebook.com/kafiahad"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="https://wa.me/8801894820513"><i class="fab fa-whatsapp"></i></a>
+            <a href="mailto:abdullahalahadkafi@gmail.com"><i class="fas fa-envelope"></i></a>
+        </div><br/>
+        Developed & Designed by Kafi</span> <br>
+        © 2025 All Rights Reserved
+    </div>
+</body>
+</html>
+
+
+
